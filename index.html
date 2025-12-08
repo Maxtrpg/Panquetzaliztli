@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>懸旗節－裂羽之兆 | 馬茲提卡</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 1. 基礎設定 --- */
+        :root {
+            --obsidian: #0a0a0a;
+            --blood: #8a0303;
+            --gold: #d4af37;
+            --gold-bright: #f4d078;
+            --gold-glow: rgba(212, 175, 55, 0.5);
+            --text-light: #e0e0e0;
+            --text-dim: #a0a0a0;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--obsidian);
+            background-image: radial-gradient(circle at 50% 50%, transparent 20%, #000 90%), url('https://www.transparenttextures.com/patterns/black-scales.png'); 
+            background-repeat: repeat; background-attachment: fixed;
+            color: var(--text-light);
+            font-family: 'Crimson Pro', serif;
+            font-size: 1rem; line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .char-name, header h1, .modal-title {
+            font-family: 'Cinzel', serif; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; margin: 0;
+        }
+
+        /* --- [修正] 技能標籤 (靠左對齊版) --- */
+        .skill-tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .skill-tag {
+            display: inline-flex;
+            justify-content: flex-start; 
+            align-items: center;
+            flex-shrink: 0;
+            width: 110px; 
+            padding: 6px 0 6px 12px; 
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #2a1a1a, #1a0a0a);
+            color: #ccc;
+            border: 1px solid #553333;
+            border-radius: 2px;
+            cursor: default;
+            transition: all 0.3s;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .skill-tag::before {
+            content: '◆';
+            color: var(--gold);
+            font-size: 0.6rem;
+            margin-right: 8px; 
+            opacity: 0.8;
+        }
+
+        .skill-tag:hover {
+            border-color: var(--gold);
+            color: #fff;
+            background: linear-gradient(135deg, #3a2a00, #221a00);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* --- 背景故事排版 (Flexbox) --- */
+        .detail-row { display: flex; align-items: flex-start; margin-bottom: 12px; line-height: 1.7; }
+        .detail-content { flex: 1; padding-top: 2px; }
+
+        /* 內文高亮標籤 */
+        .inline-tag {
+            flex-shrink: 0; display: inline-block; width: 100px; text-align: center;
+            font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 700; color: var(--gold-bright);
+            background: linear-gradient(180deg, rgba(30, 30, 30, 0.9), rgba(10, 10, 10, 0.8));
+            border: 1px solid var(--gold); border-radius: 2px; padding: 2px 0; margin-right: 15px; margin-top: 3px;
+            text-shadow: 0 1px 2px black; box-shadow: 0 0 5px rgba(212, 175, 55, 0.15);
+        }
+        .inline-tag.name { border-color: #a84444; color: #ffcccc; background: linear-gradient(180deg, rgba(60, 20, 20, 0.9), rgba(30, 10, 10, 0.8)); }
+
+        /* 簡約儀式金線 */
+        .divider-container { display: flex; align-items: center; justify-content: center; width: 60%; margin: 30px auto; opacity: 0.9; }
+        .divider-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); box-shadow: 0 0 5px var(--gold-glow); }
+        .divider-line:last-child { background: linear-gradient(90deg, var(--gold), transparent); }
+        .divider-gem { color: var(--gold-bright); font-size: 14px; padding: 0 15px; text-shadow: 0 0 10px var(--gold); background: transparent; }
+
+        /* Header */
+        header {
+            min-height: 100vh; padding: 80px 20px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.4), var(--obsidian)), url('images/temple_active_bg.webp');
+            background-size: cover; background-position: center bottom; background-attachment: scroll;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            border-bottom: 4px solid var(--blood); position: relative; z-index: 2; overflow: hidden;
+        }
+        header::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at center, transparent 30%, #000 100%); pointer-events: none; z-index: 1; }
+
+        /* 特效 */
+        .sweeping-light { position: absolute; top: -20%; left: -50%; width: 200%; height: 150%; background: conic-gradient(from 180deg at 50% 0%, transparent 150deg, rgba(255, 215, 0, 0.15) 170deg, rgba(255, 255, 255, 0.4) 180deg, rgba(255, 215, 0, 0.15) 190deg, transparent 210deg); filter: blur(60px); mix-blend-mode: screen; animation: light-sweep 15s infinite ease-in-out alternate; pointer-events: none; z-index: 2; opacity: 0.9; }
+        @keyframes light-sweep { 0% { transform: rotate(-25deg); } 100% { transform: rotate(25deg); } }
+        .fire-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        .fire-source { position: absolute; bottom: 22%; width: 80px; height: 120px; } .left-fire { left: 19%; } .right-fire { right: 19%; }
+        .flame-container { width: 100%; height: 100%; position: absolute; bottom: 0; transform-origin: center bottom; filter: blur(4px) contrast(1.2); }
+        .flame { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); border-radius: 50% 50% 20% 20%; transform-origin: center bottom; opacity: 0.8; mix-blend-mode: screen; }
+        .flame.red { width: 100%; height: 100%; background: linear-gradient(to top, orangered, transparent); animation: burn 1.5s infinite ease-in-out alternate; }
+        .flame.orange { width: 80%; height: 85%; background: linear-gradient(to top, #ff6a00, transparent); animation: burn 1.2s infinite ease-in-out alternate-reverse; }
+        .flame.gold { width: 60%; height: 70%; background: linear-gradient(to top, #ffaa00, transparent); animation: burn 1s infinite ease-in-out alternate; }
+        .flame.white { width: 40%; height: 50%; background: linear-gradient(to top, #ffffff, transparent); animation: flicker 0.2s infinite ease-in-out alternate; box-shadow: 0 0 20px #ffaa00; }
+        @keyframes burn { 0% { transform: translateX(-50%) scale(1) skewX(-2deg); opacity: 0.8; } 50% { transform: translateX(-50%) scale(1.1, 1.05) skewX(2deg); opacity: 0.9; } 100% { transform: translateX(-50%) scale(0.95, 1.1) skewX(-1deg); opacity: 0.7; } }
+        @keyframes flicker { 0% { transform: translateX(-50%) scale(1); opacity: 0.9; } 100% { transform: translateX(-50%) scale(1.05, 1.1); opacity: 1; } }
+
+        /* 標題與文字 */
+        header h1 { font-size: 4rem; margin-bottom: 15px; color: var(--gold-bright); letter-spacing: 0.05em; text-shadow: 0 2px 0px #3a2a00, 0 5px 10px rgba(0,0,0,0.5), 0 0 30px var(--gold-glow); position: relative; z-index: 10; }
+        header p.subtitle { font-family: 'Cinzel', serif; position: relative; z-index: 10; font-size: 1.1rem; color: var(--gold); letter-spacing: 2px; text-shadow: 0 2px 5px black; opacity: 0.9; }
+        
+        .header-story-box { background: linear-gradient(135deg, rgba(10,10,10,0.9), rgba(20,20,20,0.95)); border: 1px solid #444; border-top: 2px solid var(--gold); border-bottom: 2px solid var(--gold); outline: 1px solid rgba(0,0,0,0.5); outline-offset: -5px; box-shadow: 0 20px 60px rgba(0,0,0,1), inset 0 0 50px rgba(0,0,0,0.8); backdrop-filter: blur(8px); padding: 40px 50px; max-width: 850px; margin-top: 40px; position: relative; z-index: 10; transition: all 0.5s ease; }
+        .header-story-box:hover { box-shadow: 0 0 40px rgba(138, 3, 3, 0.5); border-color: var(--blood); }
+        .story-text { font-size: 1.15rem; color: #ccc; margin-bottom: 20px; text-align: justify; text-align-last: center; }
+        .story-highlight { color: var(--gold); font-weight: bold; }
+        .story-omen { color: #ff6b6b; font-style: italic; border-left: 3px solid var(--blood); padding-left: 15px; margin-top: 20px; display: block; }
+        .scroll-indicator { margin-top: 50px; position: relative; z-index: 10; animation: bounce 2s infinite; color: var(--text-dim); font-size: 0.9rem; letter-spacing: 2px; }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-10px);} 60% {transform: translateY(-5px);} }
+
+        /* 導覽列 */
+        .nav-container { position: absolute; bottom: 0; width: 100%; display: flex; justify-content: center; gap: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); z-index: 20; }
+        .nav-btn { background: rgba(10, 10, 10, 0.8); border: none; border-bottom: 3px solid transparent; color: var(--text-dim); font-family: 'Cinzel', serif; font-size: 1.2rem; padding: 15px 40px; cursor: pointer; transition: all 0.3s; position: relative; flex: 1; max-width: 300px; }
+        .nav-btn:hover { color: var(--gold); background: rgba(20, 20, 20, 0.9); }
+        .nav-btn.active { color: var(--gold-bright); background: linear-gradient(to top, rgba(212, 175, 55, 0.1), transparent); border-bottom: 3px solid var(--gold); text-shadow: 0 0 10px var(--gold-glow); }
+
+        /* 內容容器 */
+        .content-wrapper { position: relative; z-index: 10; min-height: 80vh; background: var(--obsidian); }
+        .tab-content { display: none; opacity: 0; transition: opacity 0.5s ease; animation: fadeIn 0.5s forwards; }
+        .tab-content.active { display: block; opacity: 1; }
+
+        /* Lore Tab */
+        .lore-section { padding: 40px 20px; background: linear-gradient(to bottom, var(--obsidian), #1a0f0f 50%, var(--obsidian)), url('https://www.transparenttextures.com/patterns/dark-matter.png'); position: relative; z-index: 2; }
+        .lore-container { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+        .lore-title-group { text-align: center; grid-column: 1 / -1; margin-bottom: 40px; }
+        .lore-main-title { font-size: 2.5rem; color: var(--gold); margin-bottom: 10px; text-shadow: 0 0 20px rgba(212, 175, 55, 0.4); }
+        .lore-sub-title { font-family: 'Crimson Pro', serif; font-size: 1.2rem; color: #ccc; font-style: italic; letter-spacing: 1px; }
+        .lore-box { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(212, 175, 55, 0.2); padding: 30px; position: relative; transition: all 0.3s ease; height: 100%; box-sizing: border-box; }
+        .lore-box:hover { border-color: var(--gold); background: rgba(255, 255, 255, 0.05); box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+        .lore-box::before { content: ''; position: absolute; top: -1px; left: -1px; width: 20px; height: 20px; border-top: 3px solid var(--gold); border-left: 3px solid var(--gold); }
+        .lore-box::after { content: ''; position: absolute; bottom: -1px; right: -1px; width: 20px; height: 20px; border-bottom: 3px solid var(--gold); border-right: 3px solid var(--gold); }
+        .lore-h3 { font-family: 'Cinzel', serif; color: #d4af37; font-size: 1.4rem; margin-bottom: 15px; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 8px; }
+        .lore-text { color: #ccc; font-size: 1rem; line-height: 1.7; margin-bottom: 10px; text-align: justify; }
+        .lore-highlight { color: #ff6b6b; font-weight: bold; }
+        .lore-quote { grid-column: 1 / -1; text-align: center; font-size: 1.3rem; color: var(--gold-bright); font-family: 'Cinzel', serif; margin-top: 20px; padding: 25px; border-top: 1px solid rgba(212, 175, 55, 0.3); border-bottom: 1px solid rgba(212, 175, 55, 0.3); background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.05), transparent); }
+
+        /* Char Tab */
+        .char-intro-section { text-align: center; padding: 40px 20px 20px 20px; background-color: var(--obsidian); position: relative; z-index: 2; margin-bottom: -1px; }
+        .char-intro-title { font-family: 'Cinzel', serif; font-size: 2.8rem; color: var(--gold-bright); margin-bottom: 5px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
+        .char-intro-subtitle { font-family: 'Cinzel', serif; font-size: 1rem; color: var(--gold); letter-spacing: 3px; opacity: 0.8; }
+        .char-intro-desc { font-family: 'Crimson Pro', serif; font-size: 1.1rem; color: #888; max-width: 600px; margin: 0 auto; }
+        .accordion-section { padding: 0; background: #000; overflow: hidden; position: relative; z-index: 2; border-top: 2px solid var(--gold); box-shadow: 0 -20px 50px rgba(0,0,0,1); }
+        .accordion-container { display: flex; width: 100%; height: 75vh; min-height: 500px; }
+        .acc-card { position: relative; flex: 1; height: 100%; cursor: pointer; transition: flex 0.6s cubic-bezier(0.25, 1, 0.5, 1), filter 0.4s; border-right: 1px solid rgba(0,0,0,0.5); filter: grayscale(80%) brightness(0.6); overflow: hidden; }
+        .acc-card:last-child { border-right: none; }
+        .acc-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: var(--char-img); background-size: cover; background-position: center; filter: blur(20px) brightness(0.4); z-index: 0; }
+        .acc-card::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: var(--char-img); background-size: auto 100%; background-position: top center; background-repeat: no-repeat; z-index: 1; }
+        .acc-card:hover { flex: 4; filter: grayscale(0%) brightness(1.1); }
+        .accordion-container:hover .acc-card:not(:hover) { filter: grayscale(100%) brightness(0.4); }
+        .acc-overlay { position: absolute; bottom: 0; left: 0; width: 100%; padding: 40px 20px; background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0)); opacity: 0; transform: translateY(20px); transition: all 0.4s ease 0.1s; text-align: center; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+        .acc-card:hover .acc-overlay { opacity: 1; transform: translateY(0); }
+        .acc-title { font-family: 'Cinzel', serif; font-size: 2.5rem; color: var(--gold); text-shadow: 0 4px 10px rgba(0,0,0,0.9); margin-bottom: 5px; white-space: nowrap; }
+        .acc-role { font-size: 1rem; color: #ccc; font-style: italic; display: inline-block; margin-bottom: 15px; border-bottom: 1px solid var(--blood); padding-bottom: 5px; }
+        .acc-quote { font-family: 'Crimson Pro', serif; font-size: 0.95rem; color: #aaa; font-style: italic; max-width: 80%; line-height: 1.4; margin-top: 5px; display: none; border-left: 2px solid var(--gold); padding-left: 10px; text-align: left; }
+        .acc-card:hover .acc-quote { display: block; animation: fadeIn 0.8s; }
+
+        @media (max-width: 1024px) { header h1 { font-size: 2.5rem; } .lore-container { grid-template-columns: 1fr; gap: 30px; } .accordion-container { flex-direction: row; overflow-x: auto; scroll-snap-type: x mandatory; height: 500px; } .acc-card { flex: 0 0 85vw; scroll-snap-align: center; filter: grayscale(0%) brightness(0.9); border-right: none; margin-right: 10px; } .acc-card::after { background-size: cover; background-position: center 20%; } .acc-overlay { opacity: 1; transform: translateY(0); background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); } .acc-title { font-size: 2rem; } .acc-card:hover { flex: 0 0 85vw; } }
+
+        /* Footer */
+        footer { background: black; padding: 40px 20px; text-align: center; color: var(--text-dim); font-size: 0.8rem; border-top: 2px solid var(--stone); position: relative; z-index: 2; }
+        .cta-btn { margin-top: 15px; display: inline-block; padding: 12px 35px; border: 2px solid var(--gold); color: var(--gold); text-decoration: none; background: linear-gradient(45deg, transparent 5%, rgba(212, 175, 55, 0.1) 5%); font-size: 1.1rem; font-family: 'Cinzel', serif; cursor: pointer; transition: 0.3s; letter-spacing: 2px; position: relative; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .cta-btn:hover { background-color: var(--gold); color: var(--obsidian); box-shadow: 0 0 25px var(--gold-glow); }
+
+        /* --- MODAL STYLES --- */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.95); z-index: 1000; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; backdrop-filter: blur(5px); }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-content { background: #151515; border: 2px solid var(--gold); width: 90%; max-width: 1100px; height: 85vh; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 60px rgba(212, 175, 55, 0.2); overflow: hidden; animation: slideUp 0.4s ease-out; }
+        .close-btn { position: absolute; top: 15px; right: 25px; font-size: 40px; color: var(--text-dim); cursor: pointer; z-index: 10; line-height: 0.5; transition: 0.2s; } .close-btn:hover { color: var(--gold); transform: rotate(90deg); }
+        .modal-grid { display: flex; flex-direction: row; height: 100%; }
+        .modal-image-col { flex: 1; background-color: #000; min-height: 400px; position: relative; overflow: hidden; }
+        .modal-image-placeholder { width: 100%; height: 100%; background-size: cover; background-position: top center; transition: transform 10s ease; }
+        .modal-overlay.active .modal-image-placeholder { transform: scale(1.1); }
+        
+        .modal-info-col { flex: 1.2; padding: 50px; overflow-y: auto; background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.8)), url('https://www.transparenttextures.com/patterns/black-scales.png'), linear-gradient(135deg, #1a0505 0%, #2a1a0a 100%); scrollbar-width: thin; scrollbar-color: var(--gold) #222; }
+        .modal-info-col::-webkit-scrollbar { width: 8px; } .modal-info-col::-webkit-scrollbar-track { background: #111; } .modal-info-col::-webkit-scrollbar-thumb { background-color: var(--gold); border-radius: 4px; }
+        
+        .char-header-plate { text-align: center; margin-bottom: 25px; padding: 20px; border: 1px solid var(--gold); border-left: none; border-right: none; background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.6) 50%, transparent 100%); position: relative; }
+        .char-header-plate::before { content: '❖'; font-size: 1.5rem; color: var(--gold); position: absolute; top: 50%; left: 10px; transform: translateY(-50%); }
+        .char-header-plate::after { content: '❖'; font-size: 1.5rem; color: var(--gold); position: absolute; top: 50%; right: 10px; transform: translateY(-50%); }
+        .modal-title { font-size: 3.2rem; margin: 0; display: block; background: linear-gradient(to bottom, #fff5c2 20%, #d4af37 80%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 2px 0px #3a2a00); position: relative; z-index: 2; }
+        .title-glow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: 200px; background: radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, transparent 70%); pointer-events: none; z-index: 1; }
+        .modal-subtitle { font-size: 1.2rem; color: #dcbfa3; font-style: italic; margin-top: 5px; font-family: 'Crimson Pro', serif; letter-spacing: 1px; }
+        
+        .modal-stats-box { padding: 0 0 10px 0; background: transparent; border: none; }
+        .stats-container { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin: 25px 0; width: 100%; box-sizing: border-box; }
+        .stat-glyph { background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(30,10,0,0.6) 100%); border: 1px solid #554433; border-bottom: 3px solid #886644; border-radius: 4px; padding: 15px 5px; text-align: center; position: relative; transition: all 0.3s; cursor: default; overflow: hidden; }
+        .stat-name { display: block; font-family: 'Cinzel', serif; font-size: 0.8rem; color: #aaa; letter-spacing: 1px; margin-bottom: 5px; transition: color 0.3s; }
+        .stat-value { display: block; font-family: 'Cinzel', serif; font-size: 1.8rem; font-weight: 700; color: #e0e0e0; text-shadow: 2px 2px 0px rgba(0,0,0,0.5); transition: all 0.3s; }
+        .stat-glyph:hover { transform: translateY(-5px); background: linear-gradient(180deg, #222 0%, #3a2a00 100%); border-color: var(--gold); border-bottom-color: var(--gold); box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3); }
+        .stat-glyph:hover .stat-name { color: var(--gold); } .stat-glyph:hover .stat-value { color: #fff; text-shadow: 0 0 10px var(--gold); transform: scale(1.1); }
+        .stat-glyph::after { content: attr(data-label); position: absolute; bottom: 0; left: 0; width: 100%; font-size: 0.6rem; color: #000; background-color: var(--gold); padding: 2px 0; transform: translateY(100%); transition: transform 0.3s; font-weight: bold; font-family: 'sans-serif'; }
+        .stat-glyph:hover::after { transform: translateY(0); }
+        .styled-h3 { color: var(--gold); font-family: 'Cinzel', serif; font-size: 1.1rem; margin-top: 30px; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 1px solid rgba(212, 175, 55, 0.3); letter-spacing: 1px; text-shadow: 0 0 5px rgba(212, 175, 55, 0.2); opacity: 0.9; }
+        .modal-text-content p { color: #e0e0e0; font-size: 1.05rem; margin-bottom: 15px; line-height: 1.8; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+        .ability-btn { width: 100%; padding: 12px 18px; font-family: 'Cinzel', serif; font-size: 1rem; font-weight: bold; color: #d0d0d0; background: linear-gradient(90deg, #1a0a0a, #2a1a1a); border: 1px solid #553333; border-left: 3px solid #664444; cursor: pointer; position: relative; overflow: hidden; text-align: left; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .ability-btn:hover, .ability-btn.active { color: var(--gold); border-color: var(--gold); border-left-color: var(--gold); background: linear-gradient(90deg, rgba(212, 175, 55, 0.1), transparent); box-shadow: 0 0 15px rgba(212, 175, 55, 0.15); padding-left: 25px; }
+        .ability-btn::before { content: '✦'; position: absolute; left: 5px; top: 50%; transform: translateY(-50%) scale(0); color: var(--gold); transition: all 0.3s; }
+        .ability-btn:hover::before, .ability-btn.active::before { transform: translateY(-50%) scale(1); }
+        .ability-indicator { font-size: 1.2rem; transition: transform 0.3s; color: #666; }
+        .ability-btn:hover .ability-indicator { color: var(--gold); }
+        .ability-btn.active .ability-indicator { transform: rotate(45deg); color: var(--gold); }
+        .ability-content { max-height: 0; overflow: hidden; background: rgba(0, 0, 0, 0.3); border-left: 2px solid rgba(212, 175, 55, 0.3); margin-left: 10px; transition: max-height 0.4s ease-out, opacity 0.4s ease; opacity: 0; }
+        .ability-content p { padding: 15px; margin: 0; color: #ccc; font-size: 0.95rem; font-style: normal; }
+        .ability-content.active { max-height: 600px; opacity: 1; }
+        
+        /* [修正] 裝備欄：一排兩個 + 移除濾鏡 + 底部滑出遮罩 */
+        .gear-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; justify-items: center; margin-bottom: 30px; }
+        .gear-slot { position: relative; width: 100%; max-width: 250px; height: auto; aspect-ratio: 0.8; background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%); border: 1px solid #444; border-top: 3px solid #666; border-radius: 4px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 5px 15px rgba(0,0,0,0.8); overflow: hidden; }
+        .gear-slot:hover { transform: translateY(-5px); border-color: var(--gold); border-top-color: var(--gold); box-shadow: 0 10px 25px rgba(212, 175, 55, 0.3); }
+        
+        /* [重要] 移除 filter，保留原色 */
+        .gear-icon { width: 80%; height: 80%; object-fit: contain; margin-bottom: 10px; transition: all 0.3s; filter: none; }
+        .gear-slot:hover .gear-icon { transform: scale(1.1); filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.4)); }
+        
+        .gear-name-label { font-family: 'Cinzel', serif; font-size: 0.9rem; color: #888; border-top: 1px solid #333; width: 80%; text-align: center; padding-top: 5px; transition: color 0.3s; }
+        .gear-slot:hover .gear-name-label { color: var(--gold); border-color: var(--gold); }
+        
+        /* [重要] JS 產生的是 class="gear-overlay-desc" */
+        .gear-overlay-desc { 
+            position: absolute; bottom: 0; left: 0; width: 100%; 
+            background: linear-gradient(to top, rgba(10, 5, 0, 0.95), rgba(20, 10, 5, 0.9)); 
+            color: #ccc; font-size: 0.9rem; font-style: italic; line-height: 1.4; 
+            padding: 0 15px; box-sizing: border-box; 
+            display: flex; align-items: center; justify-content: center; text-align: center;
+            /* 預設高度 0 */
+            height: 0; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .gear-slot:hover .gear-overlay-desc { height: 100%; border-top: 1px solid var(--gold); }
+
+        @media (max-width: 768px) {
+            .modal-grid { flex-direction: column; } .modal-image-col { min-height: 300px; flex: none; } .modal-title { font-size: 2.2rem; }
+            .modal-content { height: 95vh; width: 95%; } .modal-info-col { padding: 20px; } .fire-source { width: 60px; height: 90px; bottom: 20%; }
+            .stats-container { grid-template-columns: repeat(3, 1fr); gap: 8px; } .stat-value { font-size: 1.5rem; }
+            /* Mobile gear: 1 col */
+            .gear-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="fixed-background"></div>
+    <canvas id="dustCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; opacity: 0.6;"></canvas>
+
+    <header>
+        <div class="sweeping-light"></div>
+
+        <div class="fire-overlay">
+            <div class="fire-source left-fire">
+                <div class="flame-container"><div class="flame red"></div><div class="flame orange"></div><div class="flame gold"></div><div class="flame white"></div></div>
+                <div class="fire-sparks"></div>
+            </div>
+            <div class="fire-source right-fire">
+                <div class="flame-container"><div class="flame red"></div><div class="flame orange"></div><div class="flame gold"></div><div class="flame white"></div></div>
+                <div class="fire-sparks"></div>
+            </div>
+        </div>
+
+        <p style="letter-spacing: 3px; font-size: 0.8rem; color: var(--text-dim); position: relative; z-index: 10;">龍與魔 x 馬茲提卡</p>
+        <h1 style="position: relative; z-index: 10;">懸旗節－裂羽之兆</h1>
+        <p class="subtitle">Panquetzaliztli: Omen of the Split Feather</p>
+        
+        <div class="divider-container">
+            <div class="divider-line"></div><div class="divider-gem">◆</div><div class="divider-line"></div>
+        </div>
+        
+        <div class="header-story-box">
+            <p class="story-text">
+                每年此時，各地城邦會為古老的<span class="story-highlight">懸旗節</span>做準備——
+                那是紀念<span class="story-highlight">世界之母 Maztica</span> 的夜晚，也是象徵黑暗將被擊碎、生命再度循環的日子。
+            </p>
+            <p class="story-text">
+                傳說中，馬茲提卡曾在遠古的戰火中殞落於她的子嗣之手，
+                卻以更深的方式留在這片土地：
+                她的氣息在旗上飄揚、在河海裡回響，守護著後世的每一次重生。
+            </p>
+            <div class="story-omen">
+                今年的節慶看似如常，破邪偶已塑成、彩旗已升起，
+                然而神殿中卻出現一些難以言說的細微變化——
+                火光忽暗、旗影紊亂、供桌下傳來不自然的震動。
+                <br><br>
+                沒有人預料到，今年的懸旗節，將和以往不同……
+            </div>
+        </div>
+
+        <div class="nav-container">
+            <button class="nav-btn active" onclick="switchTab('lore', this)">神話起源</button>
+            <button class="nav-btn" onclick="switchTab('chars', this)">命定之人</button>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+        
+        <div id="tab-lore" class="tab-content active">
+            <section class="lore-section">
+                <div class="lore-container">
+                    <div class="lore-title-group">
+                        <h2 class="lore-main-title">懸旗節的神話起源</h2>
+                        <p class="lore-sub-title">Panquetzaliztli: Light Over Bloodlust</p>
+                        <div class="divider-container" style="width: 20%;"><div class="divider-line"></div><div class="divider-gem">◆</div><div class="divider-line"></div></div>
+                    </div>
+
+                    <div class="lore-box">
+                        <h3 class="lore-h3">世界之母的殞落</h3>
+                        <p class="lore-text">
+                            古老傳說記載，世界之母 <strong style="color:var(--gold);">馬茲提卡 (Maztica)</strong> 被她的親生兒子——噬心者 <span class="lore-highlight">札爾特克 (Zaltec)</span> 所殺。出自嫉妒與憤怒，札爾特克並斬殺了自己的母親，震碎了諸神秩序。
+                        </p>
+                        <p class="lore-text">
+                            大地雖然枯萎，但馬茲提卡並沒有完全消失。她的肉身雖死，靈魂卻散落在河川的霧氣、雨林的芳香與金字塔的涼風中。她依然在暗處滋養著世界，守護著後世的每一次重生。
+                        </p>
+                    </div>
+
+                    <div class="lore-box">
+                        <h3 class="lore-h3">皮諾塔：邪惡的容器</h3>
+                        <p class="lore-text">
+                            在古代，皮諾塔並不是節慶玩具，而是一種「邪靈容器」——一個刻意塑造成札爾特克面貌的莧麥偶像。它代表札爾特克的欺騙與嗜血渴望。薩滿們用莧麥與玉米粉塑成戰神猙獰的面貌，並在內部封印象徵貪婪與嗜血的符物。
+                        </p>
+                        <p class="lore-text">
+                            因此，<strong>「擊碎札爾特克」</strong>成為了核心儀式。一年一次，象徵榮耀的選民和充滿希望的孩子共同上前，以木棒擊碎它。這代表邪念被擊破，黑暗在光明前退散。當皮諾塔崩裂，落下的糖果與供物象徵著 <span class="lore-highlight">馬茲提卡女神被釋放的恩典</span>，重新流向大陸，宣告新的一年將由和平而非血腥主宰。
+                        </p>
+                    </div>
+
+                    <div class="lore-quote">
+                        「我們追隨生命之母，而非血之暴君。」
+                        <br>
+                        <span style="font-size: 0.9rem; color: #888; font-family: 'Crimson Pro', serif; margin-top:10px; display:block;">—— 懸旗節核心教義</span>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <div id="tab-chars" class="tab-content">
+            <div class="char-intro-section">
+                <h2 class="char-intro-title">命定之人</h2>
+                <p class="char-intro-subtitle">The Chosen Ones</p>
+                <div class="divider-container" style="width: 15%; margin: 15px auto;"><div class="divider-line"></div><div class="divider-gem">◆</div><div class="divider-line"></div></div>
+                <p class="char-intro-desc">
+                    六位和祭典相關之人，將在這場災難中尋找真相並修正錯誤。
+                </p>
+            </div>
+
+            <section class="accordion-section">
+                <div class="accordion-container">
+                    <div class="acc-card" onclick="openModal('tenoch')" style="--char-img: url('images/tenoch.webp');">
+                        <div class="acc-overlay">
+                            <h3 class="acc-title">圖拉奧特</h3>
+                            <span class="acc-role">人類神律學者 · 儀式主祭</span>
+                            <p class="acc-quote">「神靈也是遵循著祂們制定的規則。風暴、乾旱、瘟疫，皆是『契約』被違背的後果。我的職責，就是修正這些錯誤。」</p>
+                        </div>
+                    </div>
+                    <div class="acc-card" onclick="openModal('xipil')" style="--char-img: url('images/xipil.webp');">
+                        <div class="acc-overlay">
+                            <h3 class="acc-title">依西奇</h3>
+                            <span class="acc-role">半身人羽術薩滿 · 儀式輔祭</span>
+                            <p class="acc-quote">「聽見了嗎？那是森林的讚美詩。風不僅僅是氣流，它是大地的呼吸；每一片飄落的羽毛，都是自然賜予的祝福。我們只是有幸能與這宏大的生命樂章共鳴。」</p>
+                        </div>
+                    </div>
+                    <div class="acc-card" onclick="openModal('tetl')" style="--char-img: url('images/tetl.webp');">
+                        <div class="acc-overlay">
+                            <h3 class="acc-title">特里特爾</h3>
+                            <span class="acc-role">矮人鍛匠 · 儀式匠師</span>
+                            <p class="acc-quote">「人類的想像力很豐富，這我不否認。但若沒有我們矮人的錘鍊，那些夢想不過是隨風消散的沙塵。看好了，這才叫『結構』。」</p>
+                        </div>
+                    </div>
+                    <div class="acc-card" onclick="openModal('tochi')" style="--char-img: url('images/tochi.webp');">
+                        <div class="acc-overlay">
+                            <h3 class="acc-title">查帕克</h3>
+                            <span class="acc-role">半身人詩人 · 儀式樂師</span>
+                            <p class="acc-quote">「音符是看不見的階梯。只要我演奏出正確的旋律，即便是像我這樣的農家子弟，也能步入諸神的殿堂。這一次，我絕不能彈錯任何一個音。」</p>
+                        </div>
+                    </div>
+                    <div class="acc-card" onclick="openModal('yaotl')" style="--char-img: url('images/yaotl.webp');">
+                        <div class="acc-overlay">
+                            <h3 class="acc-title">亞奧特</h3>
+                            <span class="acc-role">矮人戰士 · 儀式守衛</span>
+                            <p class="acc-quote">「鎖鏈可以被掙脫，岩石可以被粉碎。我不在乎你們的頭銜或神學，我只在乎當蝰手獸衝過來時，誰還站得住腳。」</p>
+                        </div>
+                    </div>
+                    <div class="acc-card" onclick="openModal('quetzal')" style="--char-img: url('images/quetzal.webp');">
+                        <div class="acc-overlay">
+                            <h3 class="acc-title">奎察爾</h3>
+                            <span class="acc-role">人類鷹騎士 · 儀式選民</span>
+                            <p class="acc-quote">「太陽升起時從不需要徵求黑夜的同意。注視著我吧！這將是傳說開始的第一章！」</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </div>
+
+    <footer>
+        <a href="https://maxtrpg.github.io/maztica/" class="cta-btn">回到馬茲提卡</a>
+        <br><br><br>
+        <p>&copy; 2025 Maztica Campaign: Shadow of Itzpapalotl. Powered by Dragonbane System.</p>
+    </footer>
+
+    <div id="charModal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-btn" onclick="closeModal(event)">&times;</span>
+            <div class="modal-grid">
+                <div class="modal-image-col"><div id="modalImage" class="modal-image-placeholder"></div></div>
+                <div class="modal-info-col">
+                    <div class="char-header-plate">
+                        <div class="title-glow"></div>
+                        <h2 id="modalName" class="modal-title">CHARACTER NAME</h2>
+                        <p id="modalRole" class="modal-subtitle">Class & Role</p>
+                    </div>
+                    <div class="modal-stats-box">
+                        <div class="stats-container">
+                            <div class="stat-glyph" data-label="力量 Strength"><span class="stat-name">STR</span><span class="stat-value" id="statSTR">0</span></div>
+                            <div class="stat-glyph" data-label="體質 Constitution"><span class="stat-name">CON</span><span class="stat-value" id="statCON">0</span></div>
+                            <div class="stat-glyph" data-label="敏捷 Agility"><span class="stat-name">AGI</span><span class="stat-value" id="statAGI">0</span></div>
+                            <div class="stat-glyph" data-label="智力 Intelligence"><span class="stat-name">INT</span><span class="stat-value" id="statINT">0</span></div>
+                            <div class="stat-glyph" data-label="意志 Willpower"><span class="stat-name">WIL</span><span class="stat-value" id="statWIL">0</span></div>
+                            <div class="stat-glyph" data-label="魅力 Charisma"><span class="stat-name">CHA</span><span class="stat-value" id="statCHA">0</span></div>
+                        </div>
+                    </div>
+                    <div class="modal-text-content">
+                        <h3 class="styled-h3">背景故事</h3><div id="backstoryContainer" class="abilities-list"></div>
+                        <h3 class="styled-h3">主要擅長</h3><div id="modalSkills" class="skill-tag-container"></div>
+                        <h3 class="styled-h3">能力特性</h3><div id="heroAbilitiesContainer" class="abilities-list"></div>
+                        <h3 class="styled-h3">特殊物品</h3><div id="modalGearContainer" class="gear-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.tab-content').forEach(el => {
+            el.classList.remove('active');
+            el.style.opacity = 0;
+            setTimeout(() => { if(!el.classList.contains('active')) el.style.display = 'none'; }, 500);
+        });
+        const target = document.getElementById('tab-' + tabId);
+        target.style.display = 'block';
+        setTimeout(() => { target.classList.add('active'); target.style.opacity = 1; }, 10);
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    const characters = {
+        tenoch: {
+name: "圖拉奧特", role: "人類神律學者 · 儀式主祭", image: "images/tenoch.webp",
+            stats: { STR: 8, CON: 10, AGI: 9, INT: 17, WIL: 16, CHA: 15 },
+            backstory: [
+                { name: "價值觀", desc: "「神靈也是遵循著祂們制定的規則。風暴、乾旱、瘟疫，皆是『契約』被違背的後果。我的職責，就是修正這些錯誤。」<br><br><strong>恆律 (The Great Law)：</strong>相信宇宙萬物（包含神祇）都運作於一套至高無上的規則之下。" },
+                { name: "出身", desc: "圖拉奧特出身於佩澤拉克的書記官世家——<strong>「伊赫特利爾 」</strong>家族。這個姓氏在古馬茲提卡語中意味著「黑色的面孔」，象徵著書記官沾滿墨水的容顏與智慧。<br>他們是百年前從戰亂的帕伊特逃難至佩澤拉克的流亡貴族。當其他家族帶來黃金與武器時，伊赫特利爾家族只帶來了法典與古籍。<br><div class='detail-row'><span class='inline-tag'>父親的教誨</span><div class='detail-content'>父親曾帶幼年的他觀看求雨儀式。當信徒狂熱跳舞時，父親冷靜地指著主祭的手勢：「看好了，雨水降下不是因為我們跳得夠賣力，而是因為主祭在『第三個音節』精確模擬了雲層的頻率。儀式不是請求，是精確的指令。」</div></div><div class='detail-row'><span class='inline-tag'>家族陰影</span><div class='detail-content'>在佩澤拉克，他們世世代代擔任書記官與儀式負責人。家族教誨圖拉奧特：「戰士用鮮血餵養神靈，而我們用『精確』安撫神靈。」</div></div>" },
+                { name: "經歷", desc: "成年後，圖拉奧特有幸參加十年一度的「羽律朝聖行」，前往神律學聖地——比丘烏姆聖城，並進入最高的「羽蛇法典聖院」深造。<br><div class='detail-row'><span class='inline-tag'>研究方向</span><div class='detail-content'>當同儕忙著學習如何用華麗祭品取悅神明時，他卻埋首於古老的《創世契約書》。他試圖解析神明力量運作的底層邏輯，並發表了著名的論文《論神性干涉物質界的十四條鐵律》，主張神性受限於契約，除非人們先破壞了「領地」或「禁忌」，否則神罰不會無故降臨。</div></div><br><div class='detail-row'><span class='inline-tag'>成名之戰</span><div class='detail-content'>在它村一次瘟疫爆發時，當地祭者主張獻祭一百名奴隸平息瘟神。圖拉奧特挺身而出，他沒有動武，而是調出地契石板，指出瘟神祭壇的「靈脈」被新建的糧倉壓住了。他下令移開糧倉，並念誦了一段律文，瘟疫竟奇蹟般消退。 這讓他贏得了「律法解構者」的美名——他證明了，理解規則比盲目流血更有效。</div></div>" },
+                { name: "現況", desc: "作為懸旗節的主祭，儀式前夕，他發現破邪偶的神性質量異常沉重，空氣中充滿異樣。他預感到這次的儀式可能出現什麼變故，並已做好隨時修正錯誤的準備。" },
+                { name: "扮演方針", desc: "<div class='detail-row'><span class='inline-tag'>扮演建議</span><div class='detail-content'>你不是一個只會胡亂唸經的老頭，你是喜歡引經據典、符合邏輯行事的大法官，骨子裡仍然是個老學究。</div></div><br><div class='detail-row'><span class='inline-tag'>性格弱點</span><div class='detail-content'>僵化的完美主義。對「誤差」有病態恐懼，當情況超出邏輯（或是混亂無序）時會變得優柔寡斷或暴怒。</div></div>" },
+                { name: "與他人的關係", desc: "<div class='detail-row'><span class='inline-tag name'>依西奇</span><div class='detail-content'>你覺得他是個沒規矩的野孩子，整天跟魔法「聊天」簡直不成體統。但內心深處，你不得不承認他的直覺能補足你數據上的盲點。<br>你經常糾正他的施法姿勢，而他會故意在你讀書時召喚鳥類吵得你讀不下去。</div></div><div class='detail-row'><span class='inline-tag name'>奎察爾</span><div class='detail-content'>這年輕人有天賦，但太愛現了。你把他當作一個需要被「修剪」的樹苗。你擔心他的榮譽感會害死大家，所以總是指派最保守的戰術給他。<br>當他想要衝鋒時，你會用權杖敲他的頭盔：「動腦子，不是動肌肉！」</div></div><div class='detail-row'><span class='inline-tag name'>特里特爾</span><div class='detail-content'>他是少數能和你進行邏輯對話的人。他懂物質結構，你懂律法規則。你們都討厭「不穩定」的東西。<br>你們會一起蹲在牆角研究神廟的磚塊排列，並一致同意這座神廟的建築師該被處罰。</div></div><div class='detail-row'><span class='inline-tag name'>亞奧特</span><div class='detail-content'>他是你最信任的執行者。他不需要理解為什麼，只需要知道「砍哪裡」。你對他有一種對待「精密儀器」般的信任與愛護。<br>你會把最危險的護衛任務交給他，並在他受傷時，優先為他處理傷勢。</div></div><div class='detail-row'><span class='inline-tag name'>查帕克</span><div class='detail-content'>他的鼓聲對你來說有時候是噪音。你認為他太輕浮，還無法擔任神廟裡的重要職責。<br>但他偶爾能用音樂穩定混亂場面，這讓你覺得他仍有用處。當他講笑話時，你會板著臉分析笑話的結構邏輯，讓他尷尬得講不下去。</div></div>" }
+            ],
+            skills: ["語言", "祕聞傳說", "調查", "察覺", "表演", "遊說", "求生", "神律學"],
+            heroAbilities: [
+                { name: "術業有專攻：神律學", desc: "你並非以祈禱祈求神蹟，而是以研究神祇的律法與祭儀來獲取力量。你知道該如何取悅神祇，才能讓神意在凡世迴響。<br><br>當你身處與某位神祇相關的場所（神廟、祭壇或領域）時，你可以花費一刻時間進行「神律學」檢定。若成功，你得以理解此地所運行的神之法則，並以理論推演模擬其邏輯。在該次團務剩下的時間內檢定出現大失敗時，你可宣告「引用神律」來重構事件的結果，使該檢定重新擲骰一次並取較佳結果（每場團務限一次）。這代表你以對神法的理解暫時干預了命運的演算。" },
+                { name: "現場教學", desc: "你可以快速講述知識來幫助所有人。當你在協助他人時，你可以協助複數盟友進行同一項檢定。<br>但你協助的對象有人檢定失敗的話你陷入憤怒狀態（若你還未憤怒）。" },
+                { name: "直覺思考", desc: "當面臨困難抉擇時，你可以發動此能力，直接詢問 GM 一個問題，並得到一個有用的答案。<br>該答案代表你的廣泛知識，僅有助於你的決策，無法揭示所有需要知道的事情。" }
+            ],
+            gear: [
+                { name: "翠玉權杖", icon: "images/jadescepter.webp", desc: "描繪著馬茲提卡女神符文的儀式權杖，象徵主祭者的權威。" },
+                { name: "羽蛇法典", icon: "images/book.webp", desc: "記錄著星辰軌跡與神聖契約的厚重法典。" }
+            ]
+        },
+        xipil: {
+            name: "依西奇", role: "半身人薩滿 · 儀式輔祭", image: "images/xipil.webp",
+            stats: { STR: 10, CON: 12, AGI: 14, INT: 14, WIL: 16, CHA: 12 },
+            backstory: [
+                { name: "價值觀", desc: "「聽見了嗎？那是森林的讚美詩。風不僅僅是氣流，它是大地的呼吸；每一片飄落的羽毛，都是自然賜予的祝福。我們只是有幸能與這宏大的生命樂章共鳴。」<br><br><strong>崇尚自然：</strong>萬物皆有靈，我們應該遵從自然的呼吸，就能從中領悟生命的真諦。" },
+                { name: "出身", desc: "依西奇出生於佩茲米克斯森林深處的「蜂鳥氏族」。這是一個被古老羽術結界保護的世外桃源，四季如春。<br><div class='detail-row'><span class='inline-tag'>隱蔽的故鄉</span><div class='detail-content'>外人若誤闖此地，只會看到無法穿越的荊棘與迷霧；但在結界內部，是四季如春、花朵永不凋謝的聖地。依西奇從小就在這片充滿靈性的土地上長大，學習如何與自然和諧共存，而非對抗它。</div></div><br><div class='detail-row'><span class='inline-tag'>自然的教誨</span><div class='detail-content'>部落的長老教導他：「不要試圖控制自然，要學會讚美它。」他從小就懂得欣賞露水滴落的節奏、風吹過孔雀草的旋律。對他來說，這世界沒有什麼是「死物」，每一塊石頭、每一陣風都在歌頌著生命。</div></div>" },
+                { name: "經歷", desc: "成年後，依西奇做了一個大膽的決定。他離開了安全的結界，前往繁華的佩澤拉克。他並非為了追求權力，而是為了將故鄉那種「與自然共鳴」的智慧帶給更多人。在佩澤拉克，他學習了其他薩滿，甚至不同流派的觀點，接觸了更加系統性的學識來擴張自己對這個世界的了解。" },
+                { name: "現況", desc: "你感應到自然的歌聲中出現了雜音——一種血腥、沉重的頻率。察覺到空氣中不尋常的死寂，彷彿風雨前的寧靜。或許，這次的懸旗節將有什麼變故。" },
+                { name: "扮演方針", desc: "<div class='detail-row'><span class='inline-tag'>扮演建議</div></div>你是一個充滿靈性、對萬物充滿敬畏的引導者。你的力量源自於對自然和夸爾特的信仰。<br><div class='detail-row'><span class='inline-tag'>性格弱點</div></div>隨性慵懶。你厭惡死板的規則與複雜的構造。你相信直覺大於邏輯，這讓你難以與「體制內」的人合作。也因此，除非必要，否則你不會做無謂之事，並對他人說你在「感應自然」。" },
+                { name: "與他人的關係", desc: "<div class='detail-row'><span class='inline-tag name'>圖拉奧特</span><div class='detail-content'>你尊重他的知識，但覺得他活得太累了。你經常試圖讓他停下來聞聞花香，告訴他「神律」其實就寫在花瓣的紋路裡，而不是那些死板的書本中。<br>當他在長篇大論分析戰術時，你會讓他身邊開滿花朵，說是讓他「放鬆」。</div></div><div class='detail-row'><span class='inline-tag name'>查帕克</span><div class='detail-content'>你們都喜歡詩歌。你們經常一起合奏，認為音樂是與世界溝通最好的語言。<br>你們是隊伍裡的氣氛組，經常交換只有半身人懂的笑話。</div></div><div class='detail-row'><span class='inline-tag name'>亞奧特</span><div class='detail-content'>你覺得他就像一塊長了腳的頑石，雖然不解風情，但卻是自然界中最堅固的存在。躲在他背後讓你感到無比安心。<br>你會在他盔甲的縫隙插上一朵小花，告訴他這能帶來好運（雖然他通常會默默拿掉）。</div></div><div class='detail-row'><span class='inline-tag name'>特里特爾</span><div class='detail-content'>他的世界觀由直線和直角構成，而你的世界全是曲線。你覺得他對「結構」的執著有點可愛但也令人窒息。<br>當他抱怨神廟結構不穩時，你會說那是因為土地不開心，建議他澆點水而不是補水泥。</div></div><div class='detail-row'><span class='inline-tag name'>奎察爾</span><div class='detail-content'>他像一隻求偶期過度興奮的鳥兒，羽毛很漂亮，但有點吵。你擔心他的光芒太強，反而會燒傷自己。<br>當他想要魯莽衝鋒時，你會召喚一陣涼風吹過他的臉，讓他冷靜下來。</div></div>" }
+            ],
+            skills: ["野獸知識", "求生", "祕聞傳說", "醫療", "吹箭筒", "羽術流派"],
+            heroAbilities: [
+                { name: "魔法：羽術流派", desc: "由大地母神馬茲提卡親自創造，並由其子夸爾特賜予人類，用以對抗札爾特克的大軍的魔法。羽術薩滿透過羽毛、光輝與聖歌施法，象徵純潔、保護與秩序。" },
+                { name: "動物夥伴", desc: "你可以發動此能力，將一隻動物馴服為你的夥伴。此過程需耗時一刻時間，且你同時只能擁有一隻動物夥伴。只要你待在該動物的自然棲息地，牠就會一直跟著你。牠可以為你偵察附近環境，而不需要消耗額外的 WP。在戰鬥中，你可以額外消耗 3 WP，命令夥伴攻擊一名敵人（不需要花費你的動作）。" },
+                { name: "頌神曲", desc: "你精通讚揚神祇的祭文禱詞。每日一次，在適當的地方耗時一刻時間向當日侍神誠心唸頌禱詞，進行表演檢定。若成功，則侍神將會聽到你的祈禱，並降下神賜給整個隊伍。降下何種神賜取決於當日的守護侍神。" }
+            ],
+            gear: [
+                { name: "羽飾吹箭筒", icon: "images/blowgun.webp", desc: "從故鄉帶來的特製吹箭，陪伴依西奇度過了無數個思念家鄉的夜晚。" },
+                { name: "薩滿響瓢", icon: "images/maracas.webp", desc: "裝滿神聖種子的法器和樂器，搖動時能安撫失控的魔力。" }
+            ]
+        },
+        tetl: {
+            name: "特里特爾", role: "矮人鍛匠 · 儀式匠師", image: "images/tetl.webp",
+            stats: { STR: 14, CON: 15, AGI: 10, INT: 13, WIL: 12, CHA: 9 },
+            backstory: [
+                { name: "價值觀", desc: "「人類的想像力很豐富，這我不否認。但若沒有我們矮人的錘鍊，那些夢想不過是隨風消散的沙塵。看好了，這才叫『結構』。」<br><br><strong>結構即真理：</strong>敬畏著創造與塑形的古老力量，認為每一件完美的造物都是對神的獻禮。" },
+                { name: "出身", desc: "出生於南方灼熱的泰茲卡之家沙漠，隸屬於頑強的「赤沙氏族 」。他們相信石頭有記憶，而建築是與大地對話的方式。<br><div class='detail-row'><span class='inline-tag'>氏族的驕傲</span><div class='detail-content'>赤沙氏族以「在最惡劣環境中造出最堅固堡壘」聞名。特里特爾從小就在高溫窯爐旁長大，他的父親教導他：「沙子是流動的，但只要經過火的試煉，它就能變成比黑曜石更鋒利的玻璃。沒有無用的材料，只有無能的工匠。」</div></div><br><div class='detail-row'><span class='inline-tag'>叔叔的啟蒙</span><div class='detail-content'>他的叔叔是一位走南闖北的旅商。叔叔帶回來的不只黃金，還有關於「北方人類如何用石塊堆疊出奇怪港城」的故事，這在年幼的特里特爾心中埋下了對建築結構的好奇種子。</div></div>" },
+                { name: "經歷", desc: "成年後，特里特爾跟隨叔叔的商隊來到了繁華的佩澤拉克，原本只是為了見識世面，卻被眼前的景象震撼了。<br><div class='detail-row'><span class='inline-tag'>黃金軍團的遺產</span><div class='detail-content'>他在城中看到了「黃金軍團」留下的技術。那種截然不同的建築風格——拱門、鐵器、以及精密的金屬冶煉技術，深深迷住了他。他意識到，如果將矮人工藝的耐用性與外大陸的技術結合，能創造出前所未有的傑作。</div></div><br><div class='detail-row'><span class='inline-tag'>留下的決定</span><div class='detail-content'>當商隊要返回沙漠時，特里特爾選擇留下。他加入了佩澤拉克的工匠公會，致力於改良當地的傳統工藝。他引進了矮人的「榫卯加固法」來強化神廟，並嘗試用更先進的合金來鑄造儀式器具。雖然他的創新常被保守派批評為「褻瀆傳統」，但成品的堅固程度讓所有人都閉上了嘴。" },
+                { name: "現況", desc: "今年，特里特爾被重金聘請為懸旗節的「首席儀式匠師」，負責搭建懸掛皮諾塔的巨大支架以及加固神廟基座。<br>在搭建過程中，他發現了一些不對勁的事。他使用的頂級木材在沒有風的情況下發出呻吟，地基的石磚出現了不符合物理法則的微裂紋。這不是施工失誤，而是某種「超自然的重量」正在壓迫著建築結構。<br>作為追求完美的工匠，他無法容忍自己的作品出現瑕疵。他不斷拿著工具試圖加固搖搖欲墜的支架，一邊咒罵著當地的木材品質，一邊意識到這可能不是「修理」就能解決的問題。" },
+                { name: "扮演方針", desc: "<div class='detail-row'><span class='inline-tag'>扮演建議</span><div class='detail-content'>你是一個務實、毒舌、技術至上的工匠。你眼中的世界是由「材質」與「承重」構成的。</div></div><br><div class='detail-row'><span class='inline-tag'>性格弱點</span><div class='detail-content'>矮人至上主義。雖然你致力於創新，但骨子裡認為「矮人的工藝才是世界第一」。你對其他族裔的粗製濫造缺乏耐心，對不完美的結構有強迫症。面對無法用物理或邏輯解釋並掌控的現象（如依西奇的薩滿法術），你會表現出煩躁和不安。" },
+                { name: "與他人的關係", desc: "<div class='detail-row'><span class='inline-tag name'>圖拉奧特</span><div class='detail-content'>雖然他是個人類，但他的腦袋像矮人一樣清楚。他懂「神律結構」，你懂「物質結構」。<br>你們是隊伍裡少數追求邏輯的人，經常一起抱怨其他人的混亂。</div></div><div class='detail-row'><span class='inline-tag name'>依西奇</span><div class='detail-content'>他代表了你最討厭的東西——不可控的自然。樹根會破壞地基，藤蔓會腐蝕石牆。你覺得他的魔法軟趴趴的，完全沒有安全感。<br>當他說「樹木在哭泣」時，你會翻白眼說：「那是因為它長歪了，重心不穩，砍掉重種就好。」</div></div><div class='detail-row'><span class='inline-tag name'>亞奧特</span><div class='detail-content'>同為矮人，你覺得他太過於依賴蠻力，不懂得欣賞武器的工藝。你經常想把他那把舊斧頭拿來重鑄，但他死都不肯。<br>你們會用矮人語互罵，但在戰鬥中，你會優先確保他的盔甲沒有破損。</div></div><div class='detail-row'><span class='inline-tag name'>奎察爾</span><div class='detail-content'>雖然鷹騎士的鎧甲差不多都是長那樣，但你總覺得他身上的那件太浮誇了，裝飾品太多，全是為了好看而犧牲了防禦性能。你認為他就像那些人類蓋的浮誇神廟，中看不中用。<br>當他炫耀自己的羽毛裝飾時，你會冷冷地指出那個裝飾會卡住他的視線死角。</div></div><div class='detail-row'><span class='inline-tag name'>查帕克</span><div class='detail-content'>他的鼓聲干擾了你思考結構的專注力。你無法理解為什麼有人要製造這種沒有生產力的震動。<br>你曾試圖用泥巴堵住他的鼓，或者建議他把鼓改裝成更有用的「聲波武器」。</div></div>" }
+            ],
+            skills: ["工藝", "棍棒", "巧手", "徒手", "調查", "投石繩"],
+            heroAbilities: [
+                { name: "鍛匠大師", desc: "此能力需要鍛匠工具。在一刻時間內，你可以消耗 3 WP，銳化一把帶有黑曜石刀刃或尖端的武器。當使用銳化武器進行攻擊時，目標的護甲值會視為降低 2 點。一旦在戰鬥中使用銳化武器進行過攻擊或格擋，銳化效果會在該戰鬥結束後終止。" },
+                { name: "木匠大師", desc: "此能力需要木匠工具。以一個動作，你可以消耗 1 WP 對門、牆壁或其他無生命物體造成 1d12 傷害（無視護甲值）。" },
+                { name: "強力一擊", desc: "當你使用雙手近戰武器進行攻擊且命中敵人時，你會額外造成 1D8 傷害，但你在該輪無法進行移動。你不能在進行攻擊檢定後才發動此能力，也不能在移動後發動。" }
+            ],
+            gear: [
+                { name: "黑曜石大錘", icon: "images/hammer.webp", desc: "沉重的鍛造錘，既能打樁也能粉碎敵人的骨頭。" },
+                { name: "特製工匠背包", icon: "images/backpack.webp", desc: "特製的大背包，方便特里特爾能隨時拿取工具和物品。" }
+            ]
+        },
+        tochi: {
+            name: "查帕克", role: "半身人詩人 · 儀式樂師", image: "images/tochi.webp",
+            stats: { STR: 8, CON: 12, AGI: 14, INT: 12, WIL: 14, CHA: 17 },
+            backstory: [
+                { name: "價值觀", desc: "「音符是看不見的階梯。只要我演奏出正確的旋律，即便是像我這樣的農家子弟，也能步入諸神的殿堂。這一次，我絕不能彈錯任何一個音。」<br><br><strong>和聲：</strong>相信社會階級雖然存在，但音樂可以跨越隔閡，將所有人連結在一起。" },
+                { name: "出身", desc: "查帕克出生於佩澤拉克郊區的一個小村莊。他的父母是老實巴交的半身人農夫，原本期望他繼承家裡的兩頭驢和一小塊田地。<br><div class='detail-row'><span class='inline-tag'>與眾不同的童年</span><div class='detail-content'>從小，查帕克就對種田興致缺缺，但他對「聲音」極度敏感。在勞作間隙，他會敲擊空心的樹幹模仿雷聲，或是折斷蘆葦吹奏出模仿鳥鳴的旋律。那些粗糙的樂音竟能讓疲憊的農夫忘記腰痛，甚至讓倔強的驢子乖乖走路。</div></div><br><div class='detail-row'><span class='inline-tag'>家庭的犧牲</span><div class='detail-content'>父親看出了他的天賦，與母親商量了整整三夜，最後決定賣掉家裡最值錢的一頭種驢，湊足了學費，將他送往城裡的學院接受人類的教育。臨走前，父親將他親手挖空的一塊老橡木——一個簡易的木鼓——交給他：「去吧，查帕克。別像我們一樣，一輩子只看得到泥巴。」</div></div>" },
+                { name: "經歷", desc: "他深知自己沒有揮霍的本錢。他選擇了最難的修煉道路——同時精通打擊與吹奏。他用木鼓學習阿茲特克繁複的儀式節奏，用長笛研習古老的安魂曲調。每天深夜，學院的練習室裡總會傳來他交替練習的聲音，手指磨出了厚厚的老繭。<br><div class='detail-row'><span class='inline-tag'>導師的青睞</span><div class='detail-content'>他的努力引起了學院資深教授——「金舌」瑪林的注意。在畢業考核中，查帕克一手敲擊木鼓維持低音，一手吹奏長笛演繹高音，這種「一人樂團」的高超技巧與情感張力震撼了在場的所有導師。瑪林教授親自寫了推薦信，讓他獲得了擔任今年懸旗節「首席儀式樂師」的殊榮。</div></div>" },
+                { name: "現況", desc: "這對查帕克來說，不只是一份工作，這是光宗耀祖的機會。如果表現得好，他就有機會成為神廟的專屬樂師，徹底改變家族的命運。<br>為了這次儀式，他不斷地練習著。對每一個節拍、每一個氣息都要求完美，深怕在貴族與祭司面前出醜。然而，在儀式前的最後彩排中，查帕克感到極度焦慮。並不是因為他忘譜，而是因為他發現空氣中的「聲音」變了。當他敲擊木鼓時，回音沉悶得像是在敲打屍體；當他吹奏長笛時，音色帶著一絲詭異的尖嘯。他以為是自己太緊張導致失常，正在拼命擦拭樂器。" },
+                { name: "扮演方針", desc: "<div class='detail-row'><span class='inline-tag'>扮演建議</span><div class='detail-content'>你是一個有禮貌、容易緊張、卻用音樂表達自我的年輕人。面對尷尬或不知道該回什麼時，你不會說話，而是會拿起長笛吹一段旋律，或者用手指輕輕敲擊木鼓來帶過。</div></div><br><div class='detail-row'><span class='inline-tag'>性格弱點</span><div class='detail-content'>懦弱膽小。你內心深處覺得自己配不上這個位置，總擔心隨時會被揭穿是個「鄉巴佬」。當壓力過大時，你會躲進音樂的世界裡逃避現實對話。" },
+                { name: "與他人的關係", desc: "<div class='detail-row'><span class='inline-tag name'>圖拉奧特</span><div class='detail-content'>他是你最怕得罪的頂頭上司。你每次看到他皺眉，就會緊張得想拿起笛子吹一首「安神曲」給他（雖然他可能會覺得更煩）。<br>他問話時，你會緊張得結巴，最後乾脆用點頭、搖頭和鼓聲來回答。</div></div><div class='detail-row'><span class='inline-tag name'>依西奇</span><div class='detail-content'>同樣作為半身人，你對他感到又親切又頭痛。他的音樂完全沒有樂理可言，全是即興和模仿自然。<br>當他亂唱曲調時，你會忍不住拿出長笛試圖「把他的音準拉回來」，結果往往變成一場奇怪的合奏。</div></div><div class='detail-row'><span class='inline-tag name'>亞奧特</span><div class='detail-content'>雖然他從不說話，但你發現當你用長笛吹奏家鄉的民謠時，他的眼神會變得柔和。<br>你最喜歡待在他身邊，因為他不會逼你說話。你們可以安靜地坐著，只有笛聲在空氣中流動，這是你最放鬆的時刻。</div></div><div class='detail-row'><span class='inline-tag name'>奎察爾</span><div class='detail-content'>他就是你故事書裡讀到的那種英雄！你夢想著有一天能寫一首關於他的史詩。<br>你會主動幫他擦拭盔甲，或是跟在他身後，試圖為他的每一個帥氣動作配上背景音樂。</div></div><div class='detail-row'><span class='inline-tag name'>特里特爾</span><div class='detail-content'>他總是板著一張臉，好像你的音樂打擾了他工作。但你發現他對木鼓特別感興趣，似乎欣賞那種結構性的敲擊聲。<br>當不知道跟他說什麼時，你會敲擊木鼓模仿打鐵的聲音，通常這能讓他嘴角上揚一點點。</div></div>" }
+            ],
+            skills: ["表演", "體操", "閃避", "祕聞傳說", "語言", "巧手"],
+            heroAbilities: [
+                { name: "音樂家", desc: "你動人的聲音可以鼓舞你的盟友或挫敗你的敵人。<br>發動此能力（一個動作）可以讓 10 米內所有盟友的所有檢定獲得 1 個優勢，或讓相同範圍內的所有敵人獲得 1 個劣勢（選擇其中一種）。效果持續到你下一個回合開始。" },
+                { name: "紓壓曲", desc: "當你進行短休時，你可以使用樂器同時演奏紓壓的音樂來減緩同伴的壓力。<br>你可以讓和你一同短休的其他盟友額外回復 1d6 WP。" },
+                { name: "戰歌", desc: "你精通鼓舞士氣和振奮人心的激昂戰歌。<br>你可以耗時一刻時間鼓舞隊友，消除其他人的畏縮和沮喪狀態，每個消除的狀態可回復該隊友2WP。<br>此外，在戰鬥時，你也可以用一個動作吼出激勵的戰鬥誓言，聽得見你的所有其他同伴立刻自選 1 個狀態消除。" }
+            ],
+            gear: [
+                { name: "儀式用木鼓", icon: "images/drum.webp", desc: "阿茲特克傳統的雙音木鼓，聲音低沉有力。作為多年懸旗節用的儀式木鼓，擁有特殊的力量。" },
+                { name: "黑木長笛", icon: "images/flute.webp", desc: "用猛禽腿骨製成的笛子，能發出尖銳的聲音。" }
+            ]
+        },
+        yaotl: {
+            name: "亞奧特", role: "矮人戰士 · 儀式守衛", image: "images/yaotl.webp",
+            stats: { STR: 15, CON: 16, AGI: 14, INT: 10, WIL: 12, CHA: 8 },
+            backstory: [
+                { name: "價值觀", desc: "「鎖鏈可以被掙脫，岩石可以被粉碎。我不在乎你們的頭銜或神學，我只在乎當蝰手獸衝過來時，誰還站得住腳。」<br><br><strong>不屈的頑石：</strong>相信力量不來自於神賜或血統，而來自於在絕境中活下來的意志。" },
+                { name: "出身", desc: "亞奧特原本不叫這個名字。他出生於北方灼熱的伊茲卡拉沙漠 (Itzcali Desert) 邊緣的一個貧瘠矮人氏族。年輕時，他的氏族被襲擊，他淪為奴隸，被押往南方販賣。<br><div class='detail-row'><span class='inline-tag'>奴隸的記憶</span><div class='detail-content'>那是一段充滿鞭打與乾渴的日子。然而，在經過沼澤地帶時，奴隸商隊遭到了蜥蜴人的伏擊。當守衛潰逃時，亞奧特沒有驚慌。他用斷裂的鐐銬勒死了試圖吃掉他的蜥蜴人，並撿起對方的黑曜石斧，殺出了一條血路。</div></div><br><div class='detail-row'><span class='inline-tag'>重獲自由</span><div class='detail-content'>他滿身是血地走出了沼澤，沒有回到北方，因為他覺得「被俘虜過的軟弱者」已死在沙漠裡。他給自己取名亞奧特（意為「戰爭」或「敵人」），並獨自前往傳說中的戰士國度——庫塔卡。</div></div>" },
+                { name: "經歷", desc: "他來到了崇尚武力的庫塔卡，這裡不問出身，只問實力。他在這裡接受了最嚴酷的戰士訓練，並迅速在對抗蝰手獸——那些歐克、食人魔與巨魔的血腥戰爭中嶄露頭角。<br><div class='detail-row'><span class='inline-tag'>拒絕豹騎士團</span><div class='detail-content'>憑藉他的戰功，他本有資格受封為榮耀的「豹騎士 」。但他拒絕了。他厭惡騎士團內部繁文縟節的階級制度，以及那些穿著華麗羽毛卻沒上過前線的貴族指揮官。他說：「豹的皮毛太顯眼，容易招箭。我寧願當一塊不起眼的石頭。」</div></div><br><div class='detail-row'><span class='inline-tag'>支援佩澤拉克</span><div class='detail-content'>幾年前，隨著庫塔卡與佩澤拉克的軍事協防協議，亞奧特作為資深戰士被派往佩澤拉克支援。他那種「沉默、高效、不問政治」的作風，深受當地祭司們的信賴（因為他不會像其他僱傭兵一樣討價還價）。</div></div>" },
+                { name: "現況", desc: "今年，他被特別選中擔任懸旗節的核心守衛，負責保護像圖拉奧特這樣的重要主祭。這對其他人來說是榮耀，對他來說，這只是一次高風險的任務。<br>在儀式前的巡邏中，亞奧特感覺到了不對勁。並非來自星象或神諭，而是來自「氣味」。空氣中有一種他在沼澤裡聞過的、類似蜥蜴人伏擊前的腥臭味，但更加濃烈且邪惡。他默默地檢查了三次盾牌的綁帶，並將武器磨得更鋒利。" },
+                { name: "扮演方針", desc: "<div class='detail-row'><span class='inline-tag'>扮演建議</span><div class='detail-content'>你是一個沉默寡言、極度務實、有創傷後壓力症候群 (PTSD) 的老兵。你對美好的事物（詩歌、魔法、神話）缺乏共鳴，但對危險極度敏感。</div></div><br><div class='detail-row'><span class='inline-tag'>性格弱點</span><div class='detail-content'>孤狼的創傷。過去的奴隸經歷讓你難以完全信任他人。你習慣獨自承擔最危險的任務，因為你潛意識裡認為「依賴別人就會死」。" },
+                { name: "與他人的關係", desc: "<div class='detail-row'><span class='inline-tag name'>圖拉奧特</span><div class='detail-content'>你不懂什麼神律，但你知道這位老祭司是隊伍的大腦。你尊重他的冷靜與決斷力，把他視為必須優先撤離的「高價值資產」。<br>你會無條件執行他的戰術指令，並在他指揮時，用身體為他築起一道人牆。</div></div><div class='detail-row'><span class='inline-tag name'>依西奇</span><div class='detail-content'>他對著空氣說話的樣子讓你想起那些在沙漠中發瘋的奴隸。但他召喚的藤蔓確實救過你。你把他歸類為「有用的瘋子」。<br>當他在你盔甲上插花時，你會皺眉，但在戰鬥開始前，你不會把它拿掉。</div></div><div class='detail-row'><span class='inline-tag name'>查帕克</span><div class='detail-content'>這個年輕人很膽小，但他吹奏的長笛讓你像起了伊茲卡拉沙漠夜晚的風聲。那是你少數能放鬆的時刻。<br>你不會誇獎他，但如果有人威脅到這個吹笛子的小傢伙，你會第一個把對方的頭砍下來。</div></div><div class='detail-row'><span class='inline-tag name'>奎察爾</span><div class='detail-content'>你覺得他就是你當年拒絕成為的那種人——穿著華麗羽毛的鸚鵡。你承認他的武藝不錯，但他太天真，沒見過真正的地獄。<br>當他高喊榮耀口號時，你會冷冷地提醒他：「把頭低下來，不然你的羽毛冠會成為靶子。」</div></div><div class='detail-row'><span class='inline-tag name'>特里特爾</span><div class='detail-content'>雖然他是南方沙漠的，你是北方沙漠的，但矮人就是矮人。你們都喜歡石頭和金屬的觸感。你欣賞他對工藝的執著。<br>休息時，你們會默默地坐在一起保養武器和工具，不需要說話，遞一塊磨刀石就夠了。</div></div>" }
+            ],
+            skills: ["劍", "斧", "弓", "求生", "隱匿", "察覺"],
+            heroAbilities: [
+                { name: "老兵", desc: "多年來的實戰經驗，讓你能在戰場上持續把握主動權，不被局勢的混亂所動搖。在每一輪開始時，你可以發動此能力來保留你上一輪的先攻卡，而不抽取新的先攻卡。" },
+                { name: "狂暴", desc: "你立即獲得「憤怒」狀態，並立即對最近的敵人進行一次近戰攻擊。狂暴持續到戰場上沒有敵人，或你 HP 歸零為止。<br>狂暴期間：<br>．你的近戰攻擊獲得一個優勢。<br>．若你攻擊前額外消耗 1 WP ，該次命中額外造成 +1D4 傷害。<br>．擊殺一個敵人後，你可以立刻移動2米。<br>．你不能格擋或閃避。<br>戰鬥結束之後，你會陷入力竭狀態。" },
+                { name: "守護者", desc: "你願意毫不猶豫地為盟友擋下攻擊。<br>若你和另一名盟友都與同一名敵人相距 2 米內，當該敵人嘗試攻擊你的盟友時，你可以發動此能力，強迫敵人改為攻擊你。<br>此能力可以在你的回合外使用，且不需要花費動作。" }
+            ],
+            gear: [
+                { name: "馬夸維爾特", icon: "images/macuahuitl.webp", desc: "嵌滿黑曜石刀片的木製鋸齒劍，極具殺傷力。" },
+                { name: "矮人戰弓", icon: "images/shield.webp", desc: "繪有家族圖騰的堅固木盾。" }
+            ]
+        },
+        quetzal: {
+            name: "奎察爾 (Quetzal)", role: "人類鷹騎士 · 儀式守衛", image: "images/quetzal.webp",
+            stats: { STR: 15, CON: 17, AGI: 12, INT: 8, WIL: 14, CHA: 15 },
+            backstory: [
+                { name: "價值觀", desc: "「太陽升起時從不需要徵求黑夜的同意。注視著我吧！這將是傳說開始的第一章！」<br><br><strong>榮耀即吾命：</strong>相信生命是一場盛大的展演，平庸地活著比死亡更可怕。" },
+                { name: "出身", desc: "奎察爾出生於帕伊特首都烏爾托斯顯赫的「特拉佐特蘭 」家族。這個家族世世代代出產高階祭司與軍事指揮官，家中連喝水的杯子都鑲嵌著綠松石。<br><div class='detail-row'><span class='inline-tag'>家族的期望</span><div class='detail-content'>作為家族的次子，他從小就接受最頂級的菁英教育。父親期望他能成為一名穩重的指揮官，延續家族在軍隊中的影響力。但他從小聽的不是兵法，而是關於「屠龍者」與「神選英雄」的冒險故事。</div></div><br><div class='detail-row'><span class='inline-tag'>動用關係</span><div class='detail-content'>當他得知南邊的佩澤拉克擁有全大陸唯一的「冒險者公會」，且充滿了來自各地的冒險者，他徹底坐不住了。他動用了母親對他的溺愛，強行運作關係，將自己從原本安全的首都衛隊名單中劃掉，改派往佩澤拉克支援。這在家族看來是「發瘋」，但他認為這是「踏上英雄之路」。</div></div>" },
+                { name: "經歷", desc: "他加入著名的「鷹騎士團」還不到一年，但他的名字已經響徹兵營——雖然評價兩極。<br><div class='detail-row'><span class='inline-tag'>鋒芒畢露</span><div class='detail-content'>他的武藝無可挑剔，甚至在訓練中擊敗過資深教官。但他拒絕穿著制式的髒舊皮甲，而是花大錢訂製了一套覆蓋著黃金羽毛、在陽光下會反光的「傲鷹戰甲」。這讓他在戰場上像一顆會移動的光球，不僅吸引了敵人的火力，也吸引了所有人的目光。</div></div><br><div class='detail-row'><span class='inline-tag'>佩澤拉克的衝擊</span><div class='detail-content'>來到佩澤拉克後，他發現這裡的「冒險」比想像中更骯髒、更危險，但他不僅沒有退縮，反而更加興奮。在站崗和巡邏任務時，經常和經過的冒險者聊天鬼混，讓負責帶他的老兵頭痛不已。</div></div>" },
+                { name: "現況", desc: "今年的懸旗節，奎察爾做了一件驚天動地的事。為了爭取擔任儀式中*「擊碎皮諾塔」的榮譽職位（通常由資深鷹騎士擔任），他向原本的人選發起了決鬥挑戰，並在眾目睽睽之下華麗地贏了。<br>他不僅贏了決鬥，還私下贊助了儀式的部分煙火費用，並向主祭承諾會穿著他最閃亮的那套盔甲出席。對他來說，擊碎皮諾塔不僅是驅除邪惡，更是他在佩澤拉克所有人面前「正式出道」的舞台。<br>儀式前夕，他正忙著讓侍從將他的頭盔擦得更亮。當空氣中出現異樣的壓迫感時，其他人感到恐懼，奎察爾卻感到一陣戰慄的興奮。他握緊了手中的黑曜石長矛，心想：「終於來了！這就是傳說中『大事件』發生前的氣氛！舞台已經搭好，就差主角登場了！」" },
+                { name: "扮演方針", desc: "<div class='detail-row'><span class='inline-tag'>扮演建議</span><div class='detail-content'>你是一個極度自信、充滿戲劇性的熱血青年。你真心想幫助人，但你的幫助方式往往是為了讓自己看起來很帥。</div></div><br><div class='detail-row'><span class='inline-tag'>性格弱點</span><div class='detail-content'>魯莽的虛榮。只要受到稱讚，你就會慷慨地提供幫助。也因此你無法容忍自己被忽視。你容易因為追求「帥氣的行為」而忽視戰術配合，甚至陷入險境。" },
+                { name: "與他人的關係", desc: "<div class='detail-row'><span class='inline-tag name'>圖拉奧特</span><div class='detail-content'>這位老主祭掌握著話語權。你渴望得到他的認可，因為那代表你的英雄身份被官方認證了。<br>你會主動承擔最顯眼的護衛位置，並在圖拉奧特下令時，用最大聲的音量回答：「遵命，閣下！」</div></div><div class='detail-row'><span class='inline-tag name'>依西奇</span><div class='detail-content'>他總是神神叨叨的，穿著也沒什麼品味。但你覺得隊伍裡有個「神祕的森林隱士」挺酷的，這符合冒險故事的標準配置。<br>當他施展金光閃閃的法術時，你會興奮地要求：「能不能幫我也加一點光影特效？比如背後有翅膀那種？」</div></div><div class='detail-row'><span class='inline-tag name'>查帕克</span><div class='detail-content'>你很喜歡這個跟屁蟲。你覺得他很有眼光（因為他崇拜你）。你已經在腦海中規劃好，等這場冒險結束，要出錢資助他寫一本《奎察爾傳奇》。<br>你會擺出帥氣的姿勢讓他「尋找靈感」，並鼓勵他：「把這段寫進去，特別是我披風飄起來的那一刻。」</div></div><div class='detail-row'><span class='inline-tag name'>亞奧特</span><div class='detail-content'>你知道他是身經百戰的老兵，雖然他穿得像個乞丐，打架也不講武德。你表面上對他畢恭畢敬，內心卻想著總有一天要在他面前證明「華麗的戰鬥也能贏」。<br>你經常在他面前耍帥，或者在戰鬥後問他：「剛剛那招怎麼樣？是不是比你以前看過的都厲害？」</div></div><div class='detail-row'><span class='inline-tag name'>特里特爾</span><div class='detail-content'>他竟然批評你的盔甲「裝飾太多影響平衡」？你覺得他完全不懂什麼叫「氣勢」。<br>你會故意在他面前展示你盔甲上的金雕，試圖證明「美觀也是一種戰鬥力」。</div></div>" }
+            ],
+            skills: ["矛", "劍", "投槍器", "表演", "遊說", "體操"],
+            heroAbilities: [
+                { name: "羽父之祝福", desc: "每一位真正的鷹騎士，都背負著羽父的羽翼。這份羽翼只會展開一次，帶領你越過死亡，直至最後的榮耀。<br>當你死亡時，下一輪你的身體將會發出神性的光輝，你視為獲得復活術的效果，且不會受到負面影響。一旦此祝福發動後，你將永久失去此項特性。" },
+                { name: "堅強防禦", desc: "你可以在不消耗該輪動作的情況下嘗試格擋一次攻擊。<br>你只能對同一次攻擊嘗試格擋一次，且你無法再對該次攻擊進行閃避或格擋。<br>只要你有足夠的 WP，你在同一輪中可以多次發動此能力。" },
+                { name: "雙重斬擊", desc: "當你持握揮砍武器時，你可以同時對兩個相距你 2 米內的敵人進行一次攻擊。<br>你只進行一次攻擊檢定，若成功則同時命中兩個敵人。<br>敵人可以分別進行格擋或閃避。<br>傷害骰也分開計算。" }
+            ],
+            gear: [
+                { name: "鷹騎士戰甲", icon: "images/eaglearmor.webp", desc: "覆蓋著黃金羽毛的精製鷹騎士戰甲，在陽光下熠熠生輝。" },
+                { name: "馬夸維爾特", icon: "images/atlatl.webp", desc: "鷹騎士特殊的黑曜石劍，象徵著鷹騎士的榮耀。" }
+            ]
+        }
+    };
+
+    function openModal(charKey) {
+        const data = characters[charKey];
+        if (!data) return;
+        document.getElementById('modalName').innerText = data.name;
+        document.getElementById('modalRole').innerText = data.role;
+        document.getElementById('statSTR').innerText = data.stats.STR;
+        document.getElementById('statCON').innerText = data.stats.CON;
+        document.getElementById('statAGI').innerText = data.stats.AGI;
+        document.getElementById('statINT').innerText = data.stats.INT;
+        document.getElementById('statWIL').innerText = data.stats.WIL;
+        document.getElementById('statCHA').innerText = data.stats.CHA;
+        document.getElementById('modalImage').style.backgroundImage = `url('${data.image}')`;
+
+        createInteractiveList('backstoryContainer', data.backstory);
+        
+        const skillsContainer = document.getElementById('modalSkills');
+        skillsContainer.innerHTML = '';
+        if (data.skills) data.skills.forEach(skill => {
+            const tag = document.createElement('span'); tag.className = 'skill-tag'; tag.innerText = skill; skillsContainer.appendChild(tag);
+        });
+
+        createInteractiveList('heroAbilitiesContainer', data.heroAbilities);
+
+        const gearContainer = document.getElementById('modalGearContainer');
+        gearContainer.innerHTML = '';
+        if (data.gear) data.gear.forEach(item => {
+            const slot = document.createElement('div'); slot.className = 'gear-slot';
+            slot.innerHTML = `<img src="${item.icon}" class="gear-icon"><div class="gear-name-label">${item.name}</div><div class="gear-overlay-desc">${item.desc}</div>`;
+            gearContainer.appendChild(slot);
+        });
+
+        const modal = document.getElementById('charModal');
+        modal.style.display = 'flex';
+        setTimeout(() => { modal.classList.add('active'); }, 10);
+        document.body.style.overflow = 'hidden';
+    }
+
+    function createInteractiveList(containerId, dataArray) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = ''; 
+        if (dataArray) dataArray.forEach((item) => {
+            const wrapper = document.createElement('div'); wrapper.className = 'ability-wrapper';
+            const btn = document.createElement('button'); btn.className = 'ability-btn';
+            btn.innerHTML = `${item.name} <span class="ability-indicator">+</span>`;
+            btn.onclick = function() { 
+                this.classList.toggle('active'); 
+                const content = this.nextElementSibling; 
+                content.classList.toggle('active');
+                if(content.style.maxHeight){ content.style.maxHeight = null; this.querySelector('.ability-indicator').innerText='+'; }
+                else { content.style.maxHeight = content.scrollHeight + "px"; this.querySelector('.ability-indicator').innerText='×'; }
+            };
+            const content = document.createElement('div'); content.className = 'ability-content';
+            content.innerHTML = `<p>${item.desc}</p>`;
+            wrapper.appendChild(btn); wrapper.appendChild(content); container.appendChild(wrapper);
+        });
+    }
+
+    function closeModal(event) {
+        const modal = document.getElementById('charModal');
+        modal.classList.remove('active');
+        setTimeout(() => { modal.style.display = 'none'; }, 300);
+        document.body.style.overflow = 'auto';
+    }
+
+    const canvas = document.getElementById('dustCanvas'); const ctx = canvas.getContext('2d');
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resizeCanvas); resizeCanvas();
+    let particles = [];
+    for(let i=0; i<100; i++) particles.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, size:Math.random()*2, speedY:Math.random()*0.5});
+    function animateParticles(){ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle='rgba(212,175,55,0.3)'; particles.forEach(p=>{ p.y+=p.speedY; if(p.y>canvas.height)p.y=0; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fill(); }); requestAnimationFrame(animateParticles); }
+    animateParticles();
+
+    function createEmber(container) {
+        const ember = document.createElement('div');
+        ember.style.position = 'absolute'; ember.style.bottom = '40%'; ember.style.left = (Math.random() * 60 + 20) + '%';
+        ember.style.width = (Math.random() * 4 + 2) + 'px'; ember.style.height = ember.style.width;
+        ember.style.backgroundColor = Math.random() > 0.5 ? '#ffaa00' : '#ff4400';
+        ember.style.borderRadius = '50%'; ember.style.pointerEvents = 'none'; ember.style.opacity = 1;
+        ember.style.boxShadow = '0 0 6px rgba(255, 100, 0, 0.8)';
+        const duration = Math.random() * 1.5 + 1; ember.style.transition = `all ${duration}s linear`;
+        container.appendChild(ember);
+        requestAnimationFrame(() => { ember.style.transform = `translateY(-${Math.random() * 150 + 50}px) translateX(${Math.random() * 40 - 20}px)`; ember.style.opacity = 0; });
+        setTimeout(() => { ember.remove(); }, duration * 1000);
+    }
+    function startEmbers() {
+        const leftFire = document.querySelector('.left-fire .fire-sparks'); const rightFire = document.querySelector('.right-fire .fire-sparks');
+        setInterval(() => { if(leftFire) createEmber(leftFire); if(rightFire) createEmber(rightFire); }, 100);
+    }
+    startEmbers();
+</script>
+</body>
+</html>
